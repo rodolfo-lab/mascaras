@@ -1,0 +1,39 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt  
+
+AreaContornoLimiteMin = 750
+img = cv2.imread("/content/drive/MyDrive/imagem carro/20190909_151751.png")
+  
+height = np.size(img,0)
+width= np.size(img,1)
+QtdeContornos = 0
+
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)    
+low_yellow = np.array([15, 52, 132], dtype = "uint8")
+up_yellow = np.array([50, 255, 255], dtype = "uint8")   
+mask_yellow = cv2.inRange(hsv, low_yellow, up_yellow)   
+cv2_imshow(mask_yellow)
+cv2.waitKey(1)
+    
+cnts, hierarchy, = cv2.findContours(mask_yellow.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+cv2.drawContours(img,cnts,-1,(255,0,255),2)
+    
+cnts.reverse()
+for c in cnts:
+        
+  if cv2.contourArea(c) < AreaContornoLimiteMin:
+    continue         
+  QtdeContornos = QtdeContornos + 1   
+  (x, y, w, h) = cv2.boundingRect(c)                                             
+  cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+  CoordenadaXCentroContorno = round((x+x+w)/2)
+  CoordenadaYCentroContorno = round((y+y+h)/2)  
+  PontoCentralContorno = (CoordenadaXCentroContorno,CoordenadaYCentroContorno)
+  cv2.circle(img, PontoCentralContorno, 1, (0, 0, 0), 5)
+
+  cv2.line(img,(round(width/2),0),(round(width/2),round(height)),(255,0,0),2)
+     
+  if (QtdeContornos > 0):
+    cv2.line(img,PontoCentralContorno,(round(width/2),CoordenadaYCentroContorno),(0,255,0),1)
+    cv2_imshow(img)
